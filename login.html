@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Ctext y=%27.9em%27 font-size=%2790%27%3E%F0%9F%8C%A4%EF%B8%8F%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<title>Log in · Weather Dashboard</title>
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-card">
+    <aside class="auth-side">
+      <a class="brand" href="login.html"><span class="logo">🌤️</span> Weather Dashboard</a>
+      <div style="position:relative;z-index:1">
+        <h2>Know the sky before you step out.</h2>
+        <p>Live conditions, hourly changes and a 7-day outlook for any city in the world.</p>
+        <ul>
+          <li>Real-time temperature, wind and air quality</li>
+          <li>Plain-language advice for today</li>
+          <li>Your recent cities, saved to your account</li>
+        </ul>
+      </div>
+    </aside>
+
+    <section class="auth-form">
+      <h1>Welcome back</h1>
+      <p class="sub">Log in to see the weather for your city.</p>
+
+      <div class="form-error" id="formError" role="alert"></div>
+
+      <form id="loginForm" novalidate>
+        <div class="field" id="f-email">
+          <label for="email">Email</label>
+          <input type="email" id="email" autocomplete="email" placeholder="you@example.com" required>
+          <div class="err">Enter a valid email address.</div>
+        </div>
+        <div class="field" id="f-password">
+          <label for="password">Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="password" autocomplete="current-password" placeholder="Your password" required>
+            <button type="button" class="pw-toggle" aria-label="Show password">Show</button>
+          </div>
+          <div class="err">Enter your password.</div>
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="remember" checked> Keep me logged in</label>
+        </div>
+        <button class="btn btn-primary btn-block" id="submitBtn" type="submit">Log in</button>
+      </form>
+
+      <p class="auth-alt">New here? <a href="signup.html">Create an account</a></p>
+    </section>
+  </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+  WD.redirectIfSignedIn();
+  WD.wirePasswordToggles();
+  const form = document.getElementById('loginForm'), errBox = document.getElementById('formError');
+  const mark = (id, bad) => document.getElementById(id).classList.toggle('bad', bad);
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    errBox.classList.remove('show');
+    const email = form.email.value.trim(), pw = form.password.value;
+    const emailBad = !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+    mark('f-email', emailBad); mark('f-password', !pw);
+    if (emailBad || !pw) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'Logging in…';
+    setTimeout(() => {                       // short delay so the hashing doesn't freeze the button label
+      const r = WD.login(email, pw, form.remember.checked);
+      if (!r.ok) {
+        errBox.textContent = r.error; errBox.classList.add('show');
+        btn.disabled = false; btn.textContent = 'Log in';
+        return;
+      }
+      location.replace(WD.homeFor(r.user));
+    }, 30);
+  });
+</script>
+</body>
+</html>
